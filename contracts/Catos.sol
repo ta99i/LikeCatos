@@ -3,14 +3,23 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./Draw.sol";
 
-contract Catos is ERC721URIStorage, Draw, Ownable {
+interface Pet {
+    function generateTokenURI(
+        uint256 tokenId,
+        string[] memory param,
+        string memory name,
+        uint256 birthday
+    ) external pure returns (string memory);
+}
+
+contract Catos is ERC721URIStorage, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter public nftMinted;
     address payable public _donationWallet;
     uint public _pOwner;
     uint public _prix;
+    mapping(address => bool) public pets;
 
     constructor(
         address payable donationWallet,
@@ -20,6 +29,18 @@ contract Catos is ERC721URIStorage, Draw, Ownable {
         _donationWallet = donationWallet;
         _pOwner = pOwner;
         _prix = prix;
+    }
+
+    function addPet(address petContract) external onlyOwner {
+        pets[petContract] = true;
+    }
+
+    function deletPet(address petContract) external onlyOwner {
+        pets[petContract] = false;
+    }
+
+    function getPet(address petContract) public view returns (bool) {
+        return (pets[petContract]);
     }
 
     function withdraw() public payable {
@@ -42,16 +63,17 @@ contract Catos is ERC721URIStorage, Draw, Ownable {
     function mint(
         string[] memory param,
         string memory name,
-        string memory breed,
-        uint256 birthday
+        uint256 birthday,
+        address petsContract
     ) external payable {
         require(msg.value >= _prix, "No Enough Money");
+        require(pets[petsContract] == true, "No contract for this pet");
         nftMinted.increment();
         uint256 newItemId = nftMinted.current();
         _safeMint(msg.sender, newItemId);
         _setTokenURI(
             newItemId,
-            generateTokenURI(newItemId, param, name, breed, birthday)
+            Pet(petsContract).generateTokenURI(newItemId, param, name, birthday)
         );
     }
 }

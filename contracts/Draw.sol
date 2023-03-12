@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+//Breed = Homeless
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
@@ -9,7 +10,7 @@ contract Draw {
 
     function generateNFT(
         string[] memory param
-    ) public pure returns (string memory) {
+    ) internal pure returns (string memory) {
         bytes memory svg = abi.encodePacked(
             '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -0.5 15 15" shape-rendering="crispEdges" width="500">',
             '<path stroke="',
@@ -42,9 +43,8 @@ contract Draw {
         uint256 tokenId,
         string[] memory param,
         string memory name,
-        string memory breed,
         uint256 birthday
-    ) public pure returns (string memory) {
+    ) external pure returns (string memory) {
         bool _hex = true;
         uint i;
         for (i = 0; i < param.length; i++) {
@@ -76,9 +76,7 @@ contract Draw {
             "},",
             "{",
             '"trait_type":"Breed",',
-            '"value":"',
-            breed,
-            '"'
+            '"value":"Homeless"'
             "},",
             "{",
             '"display_type":"date",',
